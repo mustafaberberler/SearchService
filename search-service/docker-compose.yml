@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  product-search:
+    build: .
+    container_name: product-search
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://product-postgres:5432/products
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: mypass
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    ports:
+      - "8085:8083"
+    volumes:
+      - ./logs:/app/logs # Opsiyonel
+    command: [ "java", "-jar", "/app/.jar" ] # Doğru başlatma komutunu ekleyin
+    networks:
+      - shared-network
+
+networks:
+  shared-network:
+    external: true
