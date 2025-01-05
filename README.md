@@ -1,2 +1,0 @@
-# SearchService
-Product Search Service
