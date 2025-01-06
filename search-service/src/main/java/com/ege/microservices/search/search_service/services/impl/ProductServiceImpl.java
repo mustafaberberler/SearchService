@@ -32,18 +32,9 @@ public class ProductServiceImpl implements ProductService {
         ProductEntity productEntity = productRepository.findById(productId).orElseThrow(() -> new EntityNotFoundException("Product not found with ID: " + productId));
 
         return productDTOConverter.convertProductEntityToProductDto(productEntity);
-    }
-
-    @Override
-    public List<ProductDto> getAllProducts() {
-
-        log.info("Getting all products.");
-
-        List<ProductEntity> productEntityList = productRepository.findAll();
-
-        return productDTOConverter.convertProductEntityListToProductDtoList(productEntityList);
 
     }
+
 
     @Override
     public List<ProductDto> getProductsByDescription(String description) {
@@ -77,4 +68,27 @@ public class ProductServiceImpl implements ProductService {
         return productDTOConverter.convertProductEntityListToProductDtoList(productEntityList);
 
     }
+
+    @Override
+    public List<ProductDto> getProductsByCategoryName(String categoryName) {
+
+        log.info("Getting products by category.");
+
+        List<ProductEntity> productEntityList = productRepository.findByCategory_CategoryName(categoryName);
+
+        return productDTOConverter.convertProductEntityListToProductDtoList(productEntityList);
+
+    }
+
+    @Override
+    public List<ProductDto> getAllProducts() {
+
+        log.info("Getting all products.");
+
+        List<ProductEntity> productEntityList = productRepository.findAll();
+
+        return productDTOConverter.convertProductEntityListToProductDtoList(productEntityList);
+
+    }
+
 }

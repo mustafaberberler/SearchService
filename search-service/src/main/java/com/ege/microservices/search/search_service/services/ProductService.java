@@ -19,6 +19,9 @@ public interface ProductService {
     // Find products by price interval
     List<ProductDto> getProductsByPrice(BigDecimal minPrice, BigDecimal maxPrice);
 
+    // Find products by category name
+    List<ProductDto> getProductsByCategoryName(String categoryName);
+
     // Find all products
     List<ProductDto> getAllProducts();
 
