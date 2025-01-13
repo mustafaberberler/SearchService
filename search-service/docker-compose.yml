@@ -9,8 +9,14 @@ services:
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: mypass
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: guest
+      SPRING_RABBITMQ_PASSWORD: guest
     ports:
       - "8085:8083"
+    depends_on:
+      - rabbitmq
     volumes:
       - ./logs:/app/logs # Opsiyonel
     command: [ "java", "-jar", "/app/.jar" ] # Doğru başlatma komutunu ekleyin

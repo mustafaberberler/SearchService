@@ -3,6 +3,7 @@ package com.ege.microservices.search.search_service.services.impl;
 import com.ege.microservices.search.search_service.convert.DTOConverters.ProductDTOConverter;
 import com.ege.microservices.search.search_service.entities.ProductEntity;
 import com.ege.microservices.search.search_service.repositories.ProductRepository;
+import com.ege.microservices.search.search_service.services.LogService;
 import com.ege.microservices.search.search_service.services.ProductService;
 import com.ege.microservices.search.search_service.services.dtos.ProductDto;
 import jakarta.persistence.EntityNotFoundException;
@@ -24,12 +25,16 @@ public class ProductServiceImpl implements ProductService {
 
     private final ProductDTOConverter productDTOConverter;
 
+    private final LogService logService;
+
     @Override
     public ProductDto getProductById(String productId) {
 
         log.info("Getting the product by ID.");
 
         ProductEntity productEntity = productRepository.findById(productId).orElseThrow(() -> new EntityNotFoundException("Product not found with ID: " + productId));
+
+        logService.sendLog("INFO", "Getting the product with ID: " + productId, "Search Service");
 
         return productDTOConverter.convertProductEntityToProductDto(productEntity);
 
@@ -43,6 +48,8 @@ public class ProductServiceImpl implements ProductService {
 
         List<ProductEntity> productEntityList = productRepository.findByDescriptionContainingIgnoreCase(description);
 
+        logService.sendLog("INFO", "Getting the products with description: " + description, "Search Service");
+
         return productDTOConverter.convertProductEntityListToProductDtoList(productEntityList);
 
     }
@@ -53,6 +60,8 @@ public class ProductServiceImpl implements ProductService {
         log.info("Getting products by product name.");
 
         List<ProductEntity> productEntityList = productRepository.findByProductNameContainingIgnoreCase(productName);
+
+        logService.sendLog("INFO", "Getting the products by name: " + productName, "Search Service");
 
         return productDTOConverter.convertProductEntityListToProductDtoList(productEntityList);
 
@@ -65,6 +74,8 @@ public class ProductServiceImpl implements ProductService {
 
         List<ProductEntity> productEntityList = productRepository.findByPriceBetween(minPrice, maxPrice);
 
+        logService.sendLog("INFO", "Getting the products by price interval: " + minPrice + " and " + maxPrice, "Search Service");
+
         return productDTOConverter.convertProductEntityListToProductDtoList(productEntityList);
 
     }
@@ -76,6 +87,8 @@ public class ProductServiceImpl implements ProductService {
 
         List<ProductEntity> productEntityList = productRepository.findByCategory_CategoryName(categoryName);
 
+        logService.sendLog("INFO", "Getting the products by category name: " + categoryName, "Search Service");
+
         return productDTOConverter.convertProductEntityListToProductDtoList(productEntityList);
 
     }
@@ -86,6 +99,8 @@ public class ProductServiceImpl implements ProductService {
         log.info("Getting all products.");
 
         List<ProductEntity> productEntityList = productRepository.findAll();
+
+        logService.sendLog("INFO", "Getting all products: ","Search Service");
 
         return productDTOConverter.convertProductEntityListToProductDtoList(productEntityList);
 
