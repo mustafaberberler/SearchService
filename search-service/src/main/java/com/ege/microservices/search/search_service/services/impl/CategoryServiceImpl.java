@@ -4,6 +4,7 @@ import com.ege.microservices.search.search_service.convert.DTOConverters.Categor
 import com.ege.microservices.search.search_service.entities.CategoryEntity;
 import com.ege.microservices.search.search_service.repositories.CategoryRepository;
 import com.ege.microservices.search.search_service.services.CategoryService;
+import com.ege.microservices.search.search_service.services.LogService;
 import com.ege.microservices.search.search_service.services.dtos.CategoryDto;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -22,12 +23,16 @@ public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryDTOConverter categoryDTOConverter;
 
+    private final LogService logService;
+
     @Override
     public CategoryDto getCategoryByName(String categoryName) {
 
         log.info("Getting category by name.");
 
         CategoryEntity categoryEntity = categoryRepository.findCategoryEntityByCategoryName(categoryName);
+
+        logService.sendLog("INFO", "Getting the category by name: " + categoryName, "Search Service");
 
         return categoryDTOConverter.convertCategoryEntityToCategoryDto(categoryEntity);
 
@@ -39,6 +44,8 @@ public class CategoryServiceImpl implements CategoryService {
         log.info("Getting all categories.");
 
         List<CategoryEntity> categoryEntityList = categoryRepository.findAll();
+
+        logService.sendLog("INFO", "Getting all categories: ", "Search Service");
 
         return categoryDTOConverter.convertCategoryEntityListToCategoryDtoList(categoryEntityList);
 
