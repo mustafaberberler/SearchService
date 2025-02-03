@@ -6,6 +6,8 @@ import com.ege.microservices.search.search_service.repositories.ProductRepositor
 import com.ege.microservices.search.search_service.services.LogService;
 import com.ege.microservices.search.search_service.services.ProductService;
 import com.ege.microservices.search.search_service.services.dtos.ProductDto;
+import com.ege.microservices.search.search_service.utils.rabbitutils.RabbitMQClient;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +29,11 @@ public class ProductServiceImpl implements ProductService {
 
     private final LogService logService;
 
+    /// 03.02.2025
+    private final ObjectMapper objectMapper;
+    private static final String LOG_QUEUE = "log_service_queue";
+    private final RabbitMQClient rabbitMQClient;
+
     @Override
     public ProductDto getProductById(String productId) {
 
@@ -34,7 +41,10 @@ public class ProductServiceImpl implements ProductService {
 
         ProductEntity productEntity = productRepository.findById(productId).orElseThrow(() -> new EntityNotFoundException("Product not found with ID: " + productId));
 
-        logService.sendLog("INFO", "Getting the product with ID: " + productId, "Search Service");
+        //logService.sendLog("INFO", "Getting the product with ID: " + productId, "Search Service");
+
+        /// 03.02.2025
+        logToService("INFO", "Getting the product with ID: " + productId);
 
         return productDTOConverter.convertProductEntityToProductDto(productEntity);
 
@@ -48,7 +58,10 @@ public class ProductServiceImpl implements ProductService {
 
         List<ProductEntity> productEntityList = productRepository.findByDescriptionContainingIgnoreCase(description);
 
-        logService.sendLog("INFO", "Getting the products with description: " + description, "Search Service");
+       // logService.sendLog("INFO", "Getting the products with description: " + description, "Search Service");
+
+        /// 03.02.2025
+        logToService("INFO", "Getting the products with description: " + description);
 
         return productDTOConverter.convertProductEntityListToProductDtoList(productEntityList);
 
@@ -61,7 +74,10 @@ public class ProductServiceImpl implements ProductService {
 
         List<ProductEntity> productEntityList = productRepository.findByProductNameContainingIgnoreCase(productName);
 
-        logService.sendLog("INFO", "Getting the products by name: " + productName, "Search Service");
+       // logService.sendLog("INFO", "Getting the products by name: " + productName, "Search Service");
+
+        /// 03.02.2025
+        logToService("INFO", "Getting the products by name: " + productName);
 
         return productDTOConverter.convertProductEntityListToProductDtoList(productEntityList);
 
@@ -74,7 +90,10 @@ public class ProductServiceImpl implements ProductService {
 
         List<ProductEntity> productEntityList = productRepository.findByPriceBetween(minPrice, maxPrice);
 
-        logService.sendLog("INFO", "Getting the products by price interval: " + minPrice + " and " + maxPrice, "Search Service");
+       // logService.sendLog("INFO", "Getting the products by price interval: " + minPrice + " and " + maxPrice, "Search Service");
+
+        /// 03.02.2025
+        logToService("INFO", "Getting the products by price interval: " + minPrice + " and " + maxPrice);
 
         return productDTOConverter.convertProductEntityListToProductDtoList(productEntityList);
 
@@ -87,7 +106,10 @@ public class ProductServiceImpl implements ProductService {
 
         List<ProductEntity> productEntityList = productRepository.findByCategory_CategoryName(categoryName);
 
-        logService.sendLog("INFO", "Getting the products by category name: " + categoryName, "Search Service");
+        //logService.sendLog("INFO", "Getting the products by category name: " + categoryName, "Search Service");
+
+        /// 03.02.2025
+        logToService("INFO", "Getting the products by category name: " + categoryName);
 
         return productDTOConverter.convertProductEntityListToProductDtoList(productEntityList);
 
@@ -100,10 +122,44 @@ public class ProductServiceImpl implements ProductService {
 
         List<ProductEntity> productEntityList = productRepository.findAll();
 
-        logService.sendLog("INFO", "Getting all products: ","Search Service");
+       // logService.sendLog("INFO", "Getting all products: ","Search Service");
+
+        /// 03.02.2025
+        logToService("INFO", "Getting all products: ");
 
         return productDTOConverter.convertProductEntityListToProductDtoList(productEntityList);
 
+    }
+
+    ///  03.02.2025
+    private void logToService(String level, String message) {
+        try {
+            String logPayload = objectMapper.writeValueAsString(new LogRequest("search-service", level, message));
+            rabbitMQClient.sendAndReceive(LOG_QUEUE, logPayload);
+        } catch (Exception e) {
+            System.err.println("Failed to send log to RabbitMQ: " + message);
+        }
+    }
+
+    /// 03.02.2025
+    private static class LogRequest {
+        private String service;
+        private Content content;
+
+        public LogRequest(String service, String level, String message) {
+            this.service = service;
+            this.content = new Content(level, message);
+        }
+
+        private static class Content {
+            private String level;
+            private String message;
+
+            public Content(String level, String message) {
+                this.level = level;
+                this.message = message;
+            }
+        }
     }
 
 }
